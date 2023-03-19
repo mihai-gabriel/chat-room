@@ -1,5 +1,11 @@
 export interface ChatMessage {
   id?: number;
-  author: string;
+  text: string;
+}
+
+// TODO: Needs refactoring
+export interface FullChatMessage {
+  id: number;
+  authorName: string;
   text: string;
 }

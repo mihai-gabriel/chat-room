@@ -1,28 +1,69 @@
 import WebSocket from "ws";
 
-import type { ChatMessage, WsMessage } from "../types";
-import { MessageType } from "../types";
+import type {
+  FullChatMessage,
+  WsClientMessage,
+  WsServerMessage,
+} from "../types";
+import { WsMessageType } from "../types";
 
-import { getMessages } from "../db";
+import { messageService, userService } from "../db";
 
-export const handleInitialConnection = async (ws: WebSocket.WebSocket) => {
-  return async (data: WebSocket.RawData) => {
+type WebSocketServerClients = Set<WebSocket.WebSocket>;
+
+export const handleInitialConnection = async (
+  ws: WebSocket.WebSocket,
+  clients: WebSocketServerClients
+) => {
+  return async (rawSocketData: WebSocket.RawData) => {
     if (!ws.readyState) return;
 
-    // we cast .data to string because it represents the userId; (token in the future)
-    const receivedMessageData = JSON.parse(
-      data.toString()
-    ) as WsMessage<string>;
+    const rawMessageData = JSON.parse(rawSocketData.toString());
 
-    if (receivedMessageData.type !== MessageType.INITIAL) {
+    if (typeof rawMessageData.data === "object") {
       return;
     }
 
-    const messagesFromDb = await getMessages();
+    if (rawMessageData.data !== "initial") {
+      return;
+    }
 
-    const historyData: WsMessage<ChatMessage[]> = {
-      type: MessageType.INITIAL,
-      data: messagesFromDb,
+    // typecast to the appropriate type
+    const messageData = rawMessageData as WsClientMessage<string>;
+
+    // REFACTOR into a different function
+    // mark user as being "online" in the chat
+    userService.loginUserFromChat(messageData.userId);
+    // clients.forEach(function each(client) {
+    //   if (!client.readyState) return;
+    //
+    //   const onlineUsersData: WsServerMessage<number[]> = {
+    //     type: WsMessageType.SERVER_ANNOUNCEMENT,
+    //     data: userService.getLoggedInUsers(),
+    //   };
+    //
+    //   client.send(JSON.stringify(onlineUsersData));
+    // });
+
+    // TODO: retrieve all the messages for this user (not all messages)
+    const messagesFromDb = await messageService.getMessages();
+
+    const fullMessagesFromDb: FullChatMessage[] = [];
+
+    for (const dbMessage of messagesFromDb) {
+      const user = userService.getUserProfileById(dbMessage.authorId);
+
+      if (user) {
+        fullMessagesFromDb.push({ ...dbMessage, authorName: user?.username });
+      }
+    }
+
+    console.log("full history:", fullMessagesFromDb);
+
+    // Send the chat history when the user is initially loading the chat.
+    const historyData: WsServerMessage<FullChatMessage[]> = {
+      type: WsMessageType.CHAT_HISTORY,
+      data: fullMessagesFromDb,
     };
 
     ws.send(JSON.stringify(historyData));

@@ -1,52 +1,41 @@
-import React, { useRef, useSyncExternalStore } from "react";
-import { messageStore } from "./store";
-import { ChatMessage } from "./types";
+import React, { useEffect, useState } from "react";
+import { Chat } from "./lib";
+import { LoginPrompt } from "./lib/LoginPrompt";
 
 export default function App() {
-  const messages = useSyncExternalStore<ChatMessage[]>(
-    messageStore.subscribe,
-    messageStore.getSnapshot
-  );
+  const [hideChat, setHideChat] = useState(false);
+  const [userId, setUserId] = useState<number | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
 
-  const userInputRef = useRef(null);
+  const [pollUsersStatus, setPollUsersStatus] = useState(null);
 
-  const isUserMessageTextValid = (messageText: string): boolean => {
-    console.log(messageText);
+  useEffect(() => {
+    const localUserId = localStorage.getItem("userId");
+    const localUsername = localStorage.getItem("username");
 
-    return messageText.length >= 3;
-  };
+    localUserId && setUserId(Number(localUserId));
+    localUsername && setUsername(JSON.parse(localUsername));
+  }, []);
 
-  const sendMessage = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (userInputRef.current) {
-      const inputElement = userInputRef.current as HTMLInputElement;
-      const messageText = inputElement.value;
-
-      if (!isUserMessageTextValid(messageText)) return;
-
-      const chatMessage: ChatMessage = {
-        author: "User",
-        text: messageText,
-      };
-
-      console.log("sent event");
-      messageStore.sendMessage(chatMessage);
-    }
+  const logout = () => {
+    localStorage.removeItem("userId");
+    localStorage.removeItem("username");
+    setUserId(null);
   };
 
   return (
     <>
-      <form onSubmit={sendMessage}>
-        <input ref={userInputRef} type="text" />
-        <button type="submit">Send</button>
-      </form>
-      <hr />
-      <ul>
-        {messages.map((message) => (
-          <li key={message.id}>{message.text}</li>
-        ))}
-      </ul>
+      {userId === null && (
+        <LoginPrompt setUserId={setUserId} setUsername={setUsername} />
+      )}
+      {userId !== null && (
+        <>
+          <h3>Logged in as {username}</h3>
+          <button onClick={logout}>Logout</button>
+          <button onClick={() => setHideChat((prev) => !prev)}>Toggle</button>
+          {!hideChat && <Chat userId={userId} />}
+        </>
+      )}
     </>
   );
 }
