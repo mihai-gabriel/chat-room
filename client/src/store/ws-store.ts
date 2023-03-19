@@ -14,9 +14,11 @@ let messages: FullChatMessage[] = [];
 let listeners: Listener[] = [];
 
 // user auth data
-const userId = Number(localStorage.getItem("userId")) || 20;
+const websocket_url = import.meta.env.VITE_WS_URL_CHAT;
 
-// detect tab closing
+const getUserId = () => {
+  return Number(localStorage.getItem("userId"));
+};
 
 export const messageStore = {
   initMessages(data: FullChatMessage[]) {
@@ -29,7 +31,7 @@ export const messageStore = {
   },
   sendMessage(message: ChatMessage) {
     const sentMessageData: WsClientMessage<ChatMessage> = {
-      userId,
+      userId: getUserId(),
       data: message,
     };
 
@@ -39,11 +41,11 @@ export const messageStore = {
   },
   subscribe(listener: Listener) {
     // socket
-    socket = new WebSocket("ws://localhost:5000"); // TODO: Remove hardcoded data
+    socket = new WebSocket(websocket_url);
 
     socket.addEventListener("open", (_event) => {
       const initialClientMessage: WsClientMessage<string> = {
-        userId,
+        userId: getUserId(),
         data: "initial",
       };
 
@@ -75,7 +77,7 @@ export const messageStore = {
     // before leaving the window, notify server
     // what user has disconnected by sending their id
     window.addEventListener("beforeunload", (e) => {
-      socket.close(3001, `${userId}`);
+      socket.close(3001, `${getUserId()}`);
     });
 
     listeners = [...listeners, listener];
@@ -83,7 +85,7 @@ export const messageStore = {
     return () => {
       // if there's no outgoing data pending, close the connection.
       if (socket.bufferedAmount === 0) {
-        socket.close(3001, `${userId}`);
+        socket.close(3001, `${getUserId()}`);
       }
 
       listeners = listeners.filter((l) => l !== listener);

@@ -3,9 +3,9 @@ import { ChatMessage, ChatMessageDB, Profile, UserDB } from "../types";
 let idx = 4;
 
 let historyFromDB: ChatMessageDB[] = [
-  { id: 1, authorId: 5, text: "Hello" },
-  { id: 2, authorId: 6, text: "Hello, there" },
-  { id: 3, authorId: 5, text: "Thanks" },
+  { id: 1, authorId: 0, text: "Hello" },
+  { id: 2, authorId: 1, text: "Hello, there" },
+  { id: 3, authorId: 0, text: "Thanks" },
 ];
 
 // Note: Promises are not necessary here
@@ -36,15 +36,15 @@ const addMessage = (
 
 const messageService = { addMessage, getMessages };
 
-let userIdx = 1;
+let userIdx = 2;
 let users: UserDB[] = [
-  { id: 5, username: "test", password: "test" },
-  { id: 6, username: "test2", password: "test2" },
+  { id: 0, username: "test", password: "test" },
+  { id: 1, username: "test2", password: "test2" },
 ];
 let loggedInUsers: number[] = [];
 
-const addUser = (user: UserDB): Promise<boolean> => {
-  return new Promise<boolean>((resolve) => {
+const addUser = (user: UserDB): Promise<UserDB> => {
+  return new Promise<UserDB>((resolve) => {
     // dumb auto id
     user.id = userIdx++;
 
@@ -53,7 +53,7 @@ const addUser = (user: UserDB): Promise<boolean> => {
 
     users = [...users, user];
 
-    resolve(true);
+    resolve(user);
   });
 };
 

@@ -1,0 +1,24 @@
+/**
+  Landing Style
+ */
+
+.landing-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: Domine, serif;
+}
+
+.landing-container h1 {
+  margin-bottom: 50px;
+}
+
+.landing-container a[role="button"] {
+  cursor: pointer;
+  margin: 10px 0;
+}
+
+.landing-container a[role="button"]:hover {
+  color: #0074D9;
+}
+

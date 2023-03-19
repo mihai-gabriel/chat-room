@@ -1,0 +1,25 @@
+/**
+  Login Prompt Styles
+ */
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 300px;
+}
+
+.login-form input {
+  padding: 8px 10px;
+  border: 2px solid #333;
+  border-radius: 2px;
+  font-family: 'Spline Sans Mono', monospace;
+}
+
+.login-form button {
+  padding: 10px 10px;
+  border-radius: 4px;
+  background: #333;
+  color: #fff;
+  font-family: 'Spline Sans Mono', monospace;
+}

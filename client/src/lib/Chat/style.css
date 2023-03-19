@@ -1,0 +1,73 @@
+/**
+  Chat Styles
+ */
+
+.chat-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Spline Sans Mono', monospace;
+
+  background: #fff;
+
+  margin: 20px 0;
+  padding: 30px;
+
+  width: 50%;
+  min-height: 380px;
+
+  border: 2px solid #ccc;
+  border-radius: 4px;
+}
+
+.chat-container .chat-messages {
+  max-height: 300px;
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+
+.chat-container form.send-message-form {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  width: 100%;
+  bottom: 30px;
+}
+
+.chat-container input.chat-input {
+  width: 76%;
+  font-size: 16px;
+  padding: 10px 16px;
+  border: 2px solid #888;
+  border-radius: 2px;
+}
+
+.chat-container button.send-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  width: 10%;
+  min-width: 50px;
+  padding: 9px 20px;
+
+  background: #333;
+  border: none;
+  border-radius: 2px;
+
+  cursor: pointer;
+}
+
+.chat-container button.send-button:active {
+  background: #999;
+}
+
+.chat-container span.username {
+  color: #888;
+}
+
+.chat-container ul {
+  list-style-type: none;
+}

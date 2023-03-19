@@ -1,0 +1,40 @@
+/**
+  Chat Lobby Style
+ */
+
+.chat-lobby-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 600px;
+}
+
+.chat-lobby-container h2 {
+  font-family: Domine, serif;
+  font-weight: normal;
+}
+
+.chat-lobby-container span.highlight-username {
+  color: #85144b;
+  font-family: Domine, serif;
+  font-weight: bold;
+}
+
+.chat-lobby-container a[role="button"] {
+  cursor: pointer;
+  margin: 10px 0;
+  background: #0074D9;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-family: 'Spline Sans Mono', monospace;
+}
+
+.chat-lobby-container a[role="button"]:hover {
+  background: #004682;
+}
+
+.chat-lobby-container a[role="button"]:active {
+  background: #001f3f;
+}
+

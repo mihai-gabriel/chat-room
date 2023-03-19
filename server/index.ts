@@ -8,25 +8,29 @@ import {
   handleCloseConnection,
 } from "./chat";
 import { userService } from "./db";
+import { UserDB } from "./types";
 
 dotenv.config();
 
 const app: Express = express();
 const port = process.env.PORT;
+const origin_base_url = process.env.ORIGIN_BASE_URL;
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(cors({ origin: "http://localhost:5173", optionsSuccessStatus: 200 }));
+app.use(cors({ origin: origin_base_url, optionsSuccessStatus: 200 }));
 
 const wss = new WebSocket.Server({
   server: app.listen(port),
   host: "localhost",
-  path: "/",
+  path: "/chat",
 });
 
 // Note: `ws` is the socket to the current client.
 wss.on("connection", async function connection(ws) {
   ws.on("error", console.error);
+
+  // TODO: Add a router based on ws message type
 
   // handle Initial connection
   ws.on("message", await handleInitialConnection(ws, wss.clients));
@@ -52,6 +56,8 @@ app.post("/login", async (req: Request, res: Response) => {
     userCredentials.password
   );
 
+  console.log("user info", user);
+
   if (user) {
     res.status(200).send(
       JSON.stringify({
@@ -63,6 +69,21 @@ app.post("/login", async (req: Request, res: Response) => {
   } else {
     res.status(403).send({ message: "Auth failed" });
   }
+});
+
+app.post("/register", async (req: Request, res: Response) => {
+  const userAccountInfo: UserDB = {
+    username: req.body.username,
+    password: req.body.password,
+  };
+
+  const userCreated = await userService.addUser(userAccountInfo);
+
+  if (!userCreated) {
+    res.status(400).send({ message: "Error creating the account" });
+  }
+
+  res.status(201).send({ message: "OK", user: userCreated });
 });
 
 app.listen(() => {
