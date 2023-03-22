@@ -4,3 +4,10 @@ export interface UserDB {
   username?: string;
   password: string;
 }
+
+export interface User {
+  _id: string;
+  username: string;
+  fullName: string;
+  email: string;
+}

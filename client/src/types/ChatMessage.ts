@@ -1,6 +1,11 @@
+import { User } from "./UserDB";
+
 export interface ChatMessage {
-  id?: number;
+  _id: string;
+  author: User;
+  roomId: string;
   text: string;
+  creationDate: string;
 }
 
 // TODO: Needs refactoring

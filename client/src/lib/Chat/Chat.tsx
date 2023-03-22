@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useSyncExternalStore } from "react";
-import { ChatMessage, FullChatMessage } from "../../types";
+import { ChatMessage } from "../../types";
 import { localStorageStore, messageStore } from "../../store";
 
 import "./style.css";
@@ -7,7 +7,7 @@ import "./style.css";
 import sendIcon from "../../assets/send.svg";
 
 export const Chat: React.FC = () => {
-  const messages = useSyncExternalStore<FullChatMessage[]>(
+  const messages = useSyncExternalStore<ChatMessage[]>(
     messageStore.subscribe,
     messageStore.getSnapshot
   );
@@ -33,7 +33,7 @@ export const Chat: React.FC = () => {
 
       if (!isUserMessageTextValid(messageText)) return;
 
-      const chatMessage: ChatMessage = {
+      const chatMessage: Partial<ChatMessage> = {
         text: messageText,
       };
 
@@ -59,9 +59,11 @@ export const Chat: React.FC = () => {
       <div ref={messagesRef} className="chat-messages">
         <ul>
           {messages.map((message) => (
-            <li key={message.id}>
+            <li key={message._id}>
+              {message.creationDate}
+              {" - "}
               {message.text}{" "}
-              <span className="username">- {message.authorName}</span>
+              <span className="username">- {message.author.fullName}</span>
             </li>
           ))}
         </ul>

@@ -1,16 +1,15 @@
+import { ObjectId, WithId } from "mongodb";
+import { User } from "./UserDB";
+
 export interface ChatMessage {
-  id?: number;
+  authorId: ObjectId;
+  roomId: ObjectId;
   text: string;
 }
 
-export interface ChatMessageDB {
-  id: number;
-  authorId: number;
-  text: string;
-}
-
-export interface FullChatMessage {
-  id: number;
-  authorName: string;
-  text: string;
+export interface ChatMessageDto {
+  _id: ObjectId;
+  roomId: ObjectId;
+  author: User;
+  timestamp: string;
 }
