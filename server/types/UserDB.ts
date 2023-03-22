@@ -14,7 +14,6 @@ export interface Profile {
 }
 
 export interface User {
-  _id: ObjectId;
   username: string;
   fullName: string;
   email: string;

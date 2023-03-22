@@ -1,7 +1,7 @@
 type Listener = () => void;
 interface localStorageType {
   username?: string;
-  userId?: number;
+  userId?: string;
 }
 
 const getLocalStorageOnInit = () => {
@@ -10,7 +10,7 @@ const getLocalStorageOnInit = () => {
 
   if (!userId || !username) return {};
 
-  return { username: JSON.parse(username || ""), userId: Number(userId) };
+  return { username: JSON.parse(username || ""), userId: userId };
 };
 
 let localStorageData: localStorageType = getLocalStorageOnInit();
@@ -20,7 +20,7 @@ export const localStorageStore = {
   setUser({ userId, username }: { userId: string; username: string }) {
     localStorage.setItem("username", JSON.stringify(username));
     localStorage.setItem("userId", JSON.stringify(userId));
-    localStorageData = { userId: Number(userId), username };
+    localStorageData = { userId: userId, username };
     emitChange();
   },
   clearLocalStorage() {

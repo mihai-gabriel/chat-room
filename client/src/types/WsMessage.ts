@@ -1,8 +1,11 @@
+import { ChatMessage } from "./ChatMessage";
+
 export enum WsMessageType {
   CHAT_MESSAGE = "CHAT_MESSAGE",
   CHAT_HISTORY = "CHAT_HISTORY",
   SERVER_ANNOUNCEMENT = "SERVER_ANNOUNCEMENT",
   SERVER_ERROR = "SERVER_ERROR",
+  REQUEST_VALIDATED = "REQUEST_VALIDATED",
 }
 
 export interface WsMessage<T extends object> {
@@ -10,13 +13,18 @@ export interface WsMessage<T extends object> {
   payload: T;
 }
 
-export interface Payload {
+export interface RequestPayload {
   userId: string;
   roomId: string;
   message?: string;
 }
 
-export interface ErrorPayload {
+export interface ErrorResponsePayload {
   code: number;
   message: string;
 }
+
+export type ResponsePayload =
+  | ErrorResponsePayload
+  | ChatMessage[]
+  | ChatMessage;

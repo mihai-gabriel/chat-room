@@ -33,11 +33,7 @@ export const Chat: React.FC = () => {
 
       if (!isUserMessageTextValid(messageText)) return;
 
-      const chatMessage: Partial<ChatMessage> = {
-        text: messageText,
-      };
-
-      messageStore.sendMessage(chatMessage);
+      messageStore.sendMessage(messageText);
       inputElement.value = "";
     }
   };
@@ -51,6 +47,7 @@ export const Chat: React.FC = () => {
   }, [messages]);
 
   if (!localStorageData.userId) {
+    console.log(localStorageData.userId);
     return null;
   }
 

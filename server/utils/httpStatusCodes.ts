@@ -28,3 +28,6 @@ export const PAYMENT_REQUIRED = 402;
 export const FORBIDDEN = 403;
 export const NOT_FOUND = 404;
 export const METHOD_NOT_ALLOWED = 405;
+
+// 5xx Server errors
+export const INTERNAL_SERVER_ERROR = 500;

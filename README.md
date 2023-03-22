@@ -1,3 +1,10 @@
-### Chatroom using WebSocket
+## Chatroom using WebSocket
 
-MERN stack (MongoDB WIP)
+##### Using MERN stack
+
+TODO list:
+- Authentication
+- Edit / Remove message
+- Create chat rooms
+- Notifications
+- Create better UI

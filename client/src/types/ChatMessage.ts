@@ -7,10 +7,3 @@ export interface ChatMessage {
   text: string;
   creationDate: string;
 }
-
-// TODO: Needs refactoring
-export interface FullChatMessage {
-  id: number;
-  authorName: string;
-  text: string;
-}

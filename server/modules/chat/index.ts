@@ -1,6 +1,8 @@
 import type { RawData, WebSocket } from "ws";
-import { Payload, WsMessage, WsMessageType } from "../../types";
+import { RequestPayload, WsMessage, WsMessageType } from "../../types";
 import { sendChatHistory } from "./sendChatHistory";
+import { broadcastChatMessage } from "./broadcastChatMessage";
+import { validateRequest } from "./validateRequest";
 
 export const handleChatConnection = (
   client: WebSocket,
@@ -18,16 +20,28 @@ export const handleChatConnection = (
   client.on("message", (message) => handleMessage(message, client, clients));
 };
 
-const handleMessage = (
+const handleMessage = async (
   rawSocketData: RawData,
   client: WebSocket,
   clients: Set<WebSocket>
 ) => {
-  const messageData: WsMessage<Payload> = JSON.parse(rawSocketData.toString());
+  const messageData: WsMessage<RequestPayload> = JSON.parse(
+    rawSocketData.toString()
+  );
+
+  const validation = await validateRequest(messageData.payload);
+
+  if (validation.type === WsMessageType.SERVER_ERROR) {
+    client.send(JSON.stringify(validation));
+    return;
+  }
 
   switch (messageData.type) {
     case WsMessageType.CHAT_HISTORY:
-      sendChatHistory(client, messageData.payload);
+      await sendChatHistory(client, messageData.payload);
+      break;
+    case WsMessageType.CHAT_MESSAGE:
+      await broadcastChatMessage(client, clients, messageData.payload);
       break;
   }
 };
@@ -46,18 +60,3 @@ const handleClose = (code: number, reason: Buffer) => {
     // userService.logoutUserFromChat(userId);
   }
 };
-
-/*
-* async function connection(ws) {
-  ws.on("error", console.error);
-
-  // TODO: Add a router based on ws message type
-
-  // handle Initial connection
-  ws.on("message", await handleInitialConnection(ws, chatWss.clients));
-
-  // handle broadcasting messages
-  ws.on("message", await broadcastChatMessage(ws, chatWss.clients));
-
-  ws.on("close", await handleCloseConnection);
-}*/

@@ -6,14 +6,19 @@ import * as HttpStatus from "../../utils/httpStatusCodes";
 import {
   ChatMessage,
   ChatMessageDto,
-  ErrorPayload,
-  Payload,
+  ErrorResponsePayload,
+  RequestPayload,
+  User,
   WsMessage,
   WsMessageType,
 } from "../../types";
 
-export const sendChatHistory = async (client: WebSocket, payload: Payload) => {
+export const sendChatHistory = async (
+  client: WebSocket,
+  payload: RequestPayload
+) => {
   const chatroom = databaseClient.db("chatroom");
+  const users = chatroom.collection<User>("users");
   const messages = chatroom.collection<ChatMessage>("messages");
   const rooms = chatroom.collection("rooms");
 
@@ -28,10 +33,25 @@ export const sendChatHistory = async (client: WebSocket, payload: Payload) => {
   const userId = new ObjectId(payload.userId);
   const roomId = new ObjectId(payload.roomId);
 
-  const room = rooms.findOne({ userIds: { $in: [userId] } });
+  const user = await users.findOne({ _id: userId });
+
+  if (!user) {
+    const errorResponse: WsMessage<ErrorResponsePayload> = {
+      type: WsMessageType.SERVER_ERROR,
+      payload: {
+        code: HttpStatus.BAD_REQUEST,
+        message: "User does not exist",
+      },
+    };
+
+    client.send(JSON.stringify(errorResponse));
+    return;
+  }
+
+  const room = rooms.findOne({ _id: roomId, userIds: { $in: [userId] } });
 
   if (!room) {
-    const errorResponse: WsMessage<ErrorPayload> = {
+    const errorResponse: WsMessage<ErrorResponsePayload> = {
       type: WsMessageType.SERVER_ERROR,
       payload: {
         code: HttpStatus.UNAUTHORIZED,
@@ -40,8 +60,13 @@ export const sendChatHistory = async (client: WebSocket, payload: Payload) => {
     };
 
     client.send(JSON.stringify(errorResponse));
+    return;
   }
 
+  // - Filter Messages by roomId
+  // - Aggregate user data (authorId -> author)
+  // - Only keep the relevant fields ($project)
+  // - Append creation date (from _id)
   const roomMessages = await messages
     .aggregate<ChatMessageDto>([
       { $match: { roomId } },

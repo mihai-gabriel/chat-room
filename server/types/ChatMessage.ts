@@ -10,6 +10,7 @@ export interface ChatMessage {
 export interface ChatMessageDto {
   _id: ObjectId;
   roomId: ObjectId;
-  author: User;
-  timestamp: string;
+  author: WithId<User>;
+  text: string;
+  creationDate: string;
 }

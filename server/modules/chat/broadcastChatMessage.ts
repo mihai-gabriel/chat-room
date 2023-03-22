@@ -1,66 +1,109 @@
-// import WebSocket from "ws";
-// import {
-//   ChatMessage,
-//   FullChatMessage,
-//   WsClientMessage,
-//   WsMessageType,
-//   WsServerMessage,
-// } from "../../types";
-// import { messageService, userService } from "../../db";
-//
-// type WebSocketServerClients = Set<WebSocket.WebSocket>;
-//
-// export const broadcastChatMessage = async (
-//   broadcaster: WebSocket.WebSocket,
-//   clients: WebSocketServerClients
-// ) => {
-//   return async (rawSocketData: WebSocket.RawData) => {
-//     if (!broadcaster.readyState) return;
-//
-//     // if somebody sends to server a chat message, we need to cast it the Web socket message to chat message;
-//     const rawMessageData = JSON.parse(rawSocketData.toString());
-//
-//     if (typeof rawMessageData.data === "string") {
-//       return;
-//     }
-//
-//     if (rawMessageData.data === "initial") {
-//       return;
-//     }
-//
-//     const messageData = rawMessageData as WsClientMessage<ChatMessage>;
-//
-//     // save message to DB
-//     const fullMessageDataDB = await messageService.addMessage(
-//       messageData.data,
-//       messageData.userId
-//     );
-//
-//     console.log("received message:", fullMessageDataDB);
-//
-//     // get the username from the message author Id to send it back as a full message
-//     const user = await userService.getUserProfileById(
-//       fullMessageDataDB.authorId
-//     );
-//
-//     const fullMessageData: FullChatMessage = {
-//       ...fullMessageDataDB,
-//       authorName: user?.username || "",
-//     };
-//
-//     // We send for each client, even the sender
-//     // Note: We send the message back to the sender,
-//     //       so I won't handle updating the sent message in the frontend separately.
-//     //       It will automatically pick it up and update it.
-//     clients.forEach(function each(client) {
-//       if (!client.readyState) return;
-//
-//       const sentMessageData: WsServerMessage<ChatMessage> = {
-//         type: WsMessageType.CHAT_MESSAGE,
-//         data: fullMessageData,
-//       };
-//
-//       client.send(JSON.stringify(sentMessageData));
-//     });
-//   };
-// };
+import { WebSocket } from "ws";
+import { ObjectId } from "mongodb";
+
+import databaseClient from "../../db/conn";
+import * as HttpStatus from "../../utils/httpStatusCodes";
+import {
+  ChatMessage,
+  ChatMessageDto,
+  ErrorResponsePayload,
+  RequestPayload,
+  User,
+  WsMessage,
+  WsMessageType,
+} from "../../types";
+import { INTERNAL_SERVER_ERROR } from "../../utils/httpStatusCodes";
+
+export const broadcastChatMessage = async (
+  client: WebSocket,
+  clients: Set<WebSocket>,
+  payload: RequestPayload
+) => {
+  const chatroom = databaseClient.db("chatroom");
+  const users = chatroom.collection<User>("users");
+  const messages = chatroom.collection<ChatMessage>("messages");
+  const rooms = chatroom.collection("rooms"); // TODO: Provide type
+
+  // TODO:
+  //  1) get user id, room id
+  //  2) Validate message
+  //  3) Add new chat message to DB
+  //  4) Relay the created chat message to every client
+
+  console.log(
+    `RECEIVED: ${payload.userId} - ${payload.roomId} and ${payload.message}`
+  );
+
+  const authorId = new ObjectId(payload.userId);
+  const roomId = new ObjectId(payload.roomId);
+  const text = payload.message;
+
+  if (!text) {
+    const errorRoomResponse: WsMessage<ErrorResponsePayload> = {
+      type: WsMessageType.SERVER_ERROR,
+      payload: {
+        code: HttpStatus.UNAUTHORIZED,
+        message: "Room does not exist",
+      },
+    };
+
+    return errorRoomResponse;
+  }
+
+  const insertResult = await messages.insertOne({
+    authorId,
+    roomId,
+    text,
+  });
+
+  const createdMessage = await messages
+    .aggregate([
+      {
+        $match: { _id: insertResult.insertedId },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "authorId",
+          foreignField: "_id",
+          pipeline: [
+            { $project: { username: true, fullName: true, email: true } },
+          ],
+          as: "author",
+        },
+      },
+      { $unwind: "$author" },
+      {
+        $project: {
+          _id: true,
+          roomId: true,
+          author: true,
+          text: true,
+        },
+      },
+      { $addFields: { creationDate: { $toDate: "$_id" } } },
+    ])
+    .next();
+
+  if (!createdMessage) {
+    const serverErrorResponse: WsMessage<ErrorResponsePayload> = {
+      type: WsMessageType.SERVER_ERROR,
+      payload: {
+        code: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: "Something went wrong with handling this request",
+      },
+    };
+
+    client.send(JSON.stringify(serverErrorResponse));
+    return;
+  }
+
+  const response: WsMessage<ChatMessageDto> = {
+    type: WsMessageType.CHAT_MESSAGE,
+    payload: createdMessage as ChatMessageDto,
+  };
+
+  clients.forEach((chatClient) => {
+    chatClient.send(JSON.stringify(response));
+  });
+};

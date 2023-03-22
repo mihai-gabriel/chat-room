@@ -1,7 +1,8 @@
 import {
   ChatMessage,
-  FullChatMessage,
-  Payload,
+  ErrorResponsePayload,
+  RequestPayload,
+  ResponsePayload,
   WsMessage,
   WsMessageType,
 } from "../types";
@@ -20,6 +21,10 @@ const getUserId = () => {
   return localStorage.getItem("userId");
 };
 
+const getRoomId = () => {
+  return localStorage.getItem("roomId");
+};
+
 export const messageStore = {
   initMessages(data: ChatMessage[]) {
     messages = data;
@@ -29,15 +34,18 @@ export const messageStore = {
     messages = [...messages, data];
     emitChange();
   },
-  sendMessage(message: Partial<ChatMessage>) {
-    // const sentMessageData: WsMessage<ChatMessage> = {
-    //   userId: getUserId(),
-    //   data: message,
-    // };
-    //
-    // console.log("sentMessage:", sentMessageData);
-    //
-    // socket.send(JSON.stringify(sentMessageData));
+  sendMessage(message: string) {
+    const userId = getUserId();
+    const roomId = getRoomId();
+
+    if (!userId || !roomId) return;
+
+    const sentMessageData: WsMessage<RequestPayload> = {
+      type: WsMessageType.CHAT_MESSAGE,
+      payload: { userId, roomId, message },
+    };
+
+    socket.send(JSON.stringify(sentMessageData));
   },
   subscribe(listener: Listener) {
     // socket
@@ -45,15 +53,13 @@ export const messageStore = {
 
     socket.addEventListener("open", (_event) => {
       const userId = getUserId();
+      const roomId = getRoomId();
 
-      if (!userId) return;
+      if (!userId || !roomId) return;
 
-      const initialClientMessage: WsMessage<Payload> = {
+      const initialClientMessage: WsMessage<RequestPayload> = {
         type: WsMessageType.CHAT_HISTORY,
-        payload: {
-          userId: "6416fd5a34e70e6ec09b5a1b",
-          roomId: "641b07491c4d353d758e3db2",
-        },
+        payload: { userId, roomId },
       };
 
       // send auth for initial connection
@@ -63,24 +69,23 @@ export const messageStore = {
     // Note: MessageEvent<string> is how we receive the stringified data.
     //       It is NOT our own ChatMessage type!
     socket.addEventListener("message", (event: MessageEvent<string>) => {
-      const receivedMessageFromServer: WsMessage<ChatMessage[]> = JSON.parse(
-        event.data
-      );
+      const serverResponse: WsMessage<ResponsePayload> = JSON.parse(event.data);
 
-      // retrieve message history for this user
-      if (receivedMessageFromServer.type === WsMessageType.CHAT_HISTORY) {
-        messageStore.initMessages(receivedMessageFromServer.payload);
+      switch (serverResponse.type) {
+        case WsMessageType.SERVER_ERROR:
+          const error = serverResponse.payload as ErrorResponsePayload;
+          console.error(`[Server WS]: ${error.message}`);
+          break;
+
+        case WsMessageType.CHAT_HISTORY:
+          messageStore.initMessages(serverResponse.payload as ChatMessage[]);
+          break;
+
+        case WsMessageType.CHAT_MESSAGE:
+          messageStore.updateMessages(serverResponse.payload as ChatMessage);
+          break;
       }
     });
-
-    // socket.addEventListener("message", (event: MessageEvent<string>) => {
-    //   const receivedMessageFromServer: WsServerMessage<FullChatMessage> =
-    //     JSON.parse(event.data);
-    //
-    //   if (receivedMessageFromServer.type === WsMessageType.CHAT_MESSAGE) {
-    //     messageStore.updateMessages(receivedMessageFromServer.data);
-    //   }
-    // });
 
     // before leaving the window, notify server
     // what user has disconnected by sending their id
