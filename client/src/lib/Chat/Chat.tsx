@@ -1,10 +1,15 @@
 import React, { useEffect, useRef, useSyncExternalStore } from "react";
+import dayjs, { Dayjs } from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+
 import { ChatMessage } from "../../types";
 import { localStorageStore, messageStore } from "../../store";
 
 import "./style.css";
 
 import sendIcon from "../../assets/send.svg";
+
+dayjs.extend(relativeTime);
 
 export const Chat: React.FC = () => {
   const messages = useSyncExternalStore<ChatMessage[]>(
@@ -46,8 +51,7 @@ export const Chat: React.FC = () => {
     }
   }, [messages]);
 
-  if (!localStorageData.userId) {
-    console.log(localStorageData.userId);
+  if (!localStorageData.user) {
     return null;
   }
 
@@ -57,10 +61,10 @@ export const Chat: React.FC = () => {
         <ul>
           {messages.map((message) => (
             <li key={message._id}>
-              {message.creationDate}
-              {" - "}
-              {message.text}{" "}
-              <span className="username">- {message.author.fullName}</span>
+              {dayjs(message.creationDate).fromNow()}
+              {": "}
+              {message.text}
+              <span className="username"> - {message.author.fullName}</span>
             </li>
           ))}
         </ul>

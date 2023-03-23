@@ -1,5 +1,5 @@
 import { ObjectId, WithId } from "mongodb";
-import { User } from "./UserDB";
+import { User } from "./User";
 
 export interface ChatMessage {
   authorId: ObjectId;

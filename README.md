@@ -3,7 +3,7 @@
 ##### Using MERN stack
 
 TODO list:
-- Authentication
+- Authentication (JWT)
 - Edit / Remove message
 - Create chat rooms
 - Notifications

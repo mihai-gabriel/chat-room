@@ -8,7 +8,8 @@ import {
   ChatMessageDto,
   ErrorResponsePayload,
   RequestPayload,
-  User,
+  Room,
+  UserDb,
   WsMessage,
   WsMessageType,
 } from "../../types";
@@ -18,17 +19,9 @@ export const sendChatHistory = async (
   payload: RequestPayload
 ) => {
   const chatroom = databaseClient.db("chatroom");
-  const users = chatroom.collection<User>("users");
+  const users = chatroom.collection<UserDb>("users");
   const messages = chatroom.collection<ChatMessage>("messages");
-  const rooms = chatroom.collection("rooms");
-
-  // TODO:
-  //  1) Get user id, room id from `payload`
-  //  2) Verify if user has access to that room
-  //  3) Query all the messages from that room (Suggestion: pagination)
-  //  4) Send the messages as JSON to the client
-
-  console.log(`RECEIVED: ${payload.userId} and ${payload.roomId}`);
+  const rooms = chatroom.collection<Room>("rooms");
 
   const userId = new ObjectId(payload.userId);
   const roomId = new ObjectId(payload.roomId);

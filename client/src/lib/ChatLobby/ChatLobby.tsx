@@ -14,7 +14,9 @@ export const ChatLobby: React.FC = () => {
     <div className="chat-lobby-container">
       <h2>
         Logged in as{" "}
-        <span className="highlight-username">{localStorageData.username}</span>
+        <span className="highlight-username">
+          {localStorageData.user?.username}
+        </span>
       </h2>
       <a role="button" onClick={localStorageStore.clearLocalStorage}>
         Logout

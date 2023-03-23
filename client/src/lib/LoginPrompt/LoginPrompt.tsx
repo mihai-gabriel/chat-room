@@ -1,5 +1,5 @@
 import { FormEvent, useRef, useSyncExternalStore } from "react";
-import { UserDB } from "../../types";
+import { User, UserDb, UserSession } from "../../types";
 import { localStorageStore } from "../../store";
 
 import "./style.css";
@@ -16,25 +16,21 @@ export const LoginPrompt: React.FC = () => {
     const usernameInput = usernameRef.current as HTMLInputElement;
     const passwordInput = passwordRef.current as HTMLInputElement;
 
-    const userData: UserDB = {
+    const userData: Partial<UserDb> = {
       username: usernameInput.value,
       password: passwordInput.value,
     };
 
-    // TODO: Replace userId with userToken
-    const responseData = await fetch(`${import.meta.env.VITE_API_URL}/login`, {
+    // TODO: Use JWT
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(userData),
     });
 
-    const responseJson = await responseData.json();
-
-    if (responseData.status === 200) {
-      const userId = responseJson.userId;
-      const username = responseJson.username;
-
-      localStorageStore.setUser({ userId, username });
+    if (response.ok) {
+      const session: UserSession = await response.json();
+      localStorageStore.setSession(session);
     }
   };
 

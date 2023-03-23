@@ -1,10 +1,13 @@
 import React, { FormEvent, useRef, useState } from "react";
-import { UserDB } from "../../types";
 
 import "./style.css";
+import { UserDb, UserSession } from "../../types";
+import { localStorageStore } from "../../store";
 
 export const RegisterPrompt: React.FC = () => {
   const usernameRef = useRef(null);
+  const emailRef = useRef(null);
+  const fullNameRef = useRef(null);
   const passwordRef = useRef(null);
 
   const [registerSuccess, setRegisterSuccess] = useState(false);
@@ -12,27 +15,37 @@ export const RegisterPrompt: React.FC = () => {
   const submitRegisterForm = async (e: FormEvent) => {
     e.preventDefault();
 
-    if (!usernameRef.current || !passwordRef.current) return;
+    if (
+      !usernameRef.current ||
+      !emailRef.current ||
+      !fullNameRef.current ||
+      !passwordRef.current
+    ) {
+      return;
+    }
 
     const usernameInput = usernameRef.current as HTMLInputElement;
+    const emailInput = emailRef.current as HTMLInputElement;
+    const fullNameInput = fullNameRef.current as HTMLInputElement;
     const passwordInput = passwordRef.current as HTMLInputElement;
 
-    const userData: UserDB = {
+    const userData: Partial<UserDb> = {
       username: usernameInput.value,
+      email: emailInput.value,
+      fullName: fullNameInput.value,
       password: passwordInput.value,
     };
 
-    // TODO: Replace userId with userToken
-    const responseData = await fetch(
-      `${import.meta.env.VITE_API_URL}/register`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(userData),
-      }
-    );
+    // TODO: Use JWT
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(userData),
+    });
 
-    if (responseData.status === 201) {
+    if (response.ok) {
+      const { message } = await response.json();
+      console.info(message);
       setRegisterSuccess(true);
     }
   };
@@ -40,6 +53,8 @@ export const RegisterPrompt: React.FC = () => {
   return (
     <form className="register-form" onSubmit={submitRegisterForm}>
       <input ref={usernameRef} type="text" placeholder="Username" />
+      <input ref={emailRef} type="text" placeholder="Email" />
+      <input ref={fullNameRef} type="text" placeholder="Full Name" />
       <input ref={passwordRef} type="password" placeholder="Password" />
       <span className={registerSuccess ? "success" : "hidden"}>
         Registered successfully

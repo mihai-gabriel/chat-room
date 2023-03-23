@@ -4,15 +4,16 @@ import * as HttpStatus from "../../utils/httpStatusCodes";
 import {
   ErrorResponsePayload,
   RequestPayload,
-  User,
+  Room,
+  UserDb,
   WsMessage,
   WsMessageType,
 } from "../../types";
 
 export const validateRequest = async (payload: RequestPayload) => {
   const chatroom = databaseClient.db("chatroom");
-  const users = chatroom.collection<User>("users");
-  const rooms = chatroom.collection("rooms"); // TODO: Provide type
+  const users = chatroom.collection<UserDb>("users");
+  const rooms = chatroom.collection<Room>("rooms");
 
   let userId: ObjectId;
   let roomId: ObjectId;

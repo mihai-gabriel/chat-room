@@ -8,7 +8,8 @@ import {
   ChatMessageDto,
   ErrorResponsePayload,
   RequestPayload,
-  User,
+  Room,
+  UserDb,
   WsMessage,
   WsMessageType,
 } from "../../types";
@@ -20,15 +21,9 @@ export const broadcastChatMessage = async (
   payload: RequestPayload
 ) => {
   const chatroom = databaseClient.db("chatroom");
-  const users = chatroom.collection<User>("users");
+  const _users = chatroom.collection<UserDb>("users");
+  const _rooms = chatroom.collection<Room>("rooms");
   const messages = chatroom.collection<ChatMessage>("messages");
-  const rooms = chatroom.collection("rooms"); // TODO: Provide type
-
-  // TODO:
-  //  1) get user id, room id
-  //  2) Validate message
-  //  3) Add new chat message to DB
-  //  4) Relay the created chat message to every client
 
   console.log(
     `RECEIVED: ${payload.userId} - ${payload.roomId} and ${payload.message}`

@@ -1,3 +1,4 @@
 export * from "./ChatMessage";
 export * from "./WsMessage";
-export * from "./UserDB";
+export * from "./User";
+export * from "./Room";

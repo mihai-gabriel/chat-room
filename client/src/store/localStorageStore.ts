@@ -1,26 +1,30 @@
+import { User, UserSession } from "../types";
+
 type Listener = () => void;
-interface localStorageType {
-  username?: string;
-  userId?: string;
-}
 
 const getLocalStorageOnInit = () => {
-  const username = localStorage.getItem("username");
-  const userId = localStorage.getItem("userId");
+  const localUser = localStorage.getItem("user");
+  const localRoomId = localStorage.getItem("roomId");
 
-  if (!userId || !username) return {};
+  if (!localUser || !localRoomId) return {};
 
-  return { username: JSON.parse(username || ""), userId: userId };
+  const user = JSON.parse(localUser) as User;
+  const roomId = JSON.parse(localRoomId) as string;
+
+  return { user, roomId };
 };
 
-let localStorageData: localStorageType = getLocalStorageOnInit();
+let localStorageData: Partial<UserSession> = getLocalStorageOnInit();
 let listeners: Listener[] = [];
 
 export const localStorageStore = {
-  setUser({ userId, username }: { userId: string; username: string }) {
-    localStorage.setItem("username", JSON.stringify(username));
-    localStorage.setItem("userId", JSON.stringify(userId));
-    localStorageData = { userId: userId, username };
+  setSession({ user, roomId }: UserSession) {
+    // make auth persistent locally
+    localStorage.setItem("user", JSON.stringify(user));
+    localStorage.setItem("roomId", JSON.stringify(roomId));
+
+    // trigger UI real-time update
+    localStorageData = { user, roomId };
     emitChange();
   },
   clearLocalStorage() {
@@ -40,7 +44,6 @@ export const localStorageStore = {
 };
 
 function emitChange() {
-  for (let listener of listeners) {
-    listener();
-  }
+  // Note: Calling a listener forces the UI component to re-render.
+  listeners.forEach((listener) => listener());
 }

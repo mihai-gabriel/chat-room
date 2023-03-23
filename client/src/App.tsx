@@ -7,7 +7,7 @@ export default function App() {
     localStorageStore.subscribe,
     localStorageStore.getSnapshot
   );
-  const userLoggedIn = localStorageData.userId !== undefined;
+  const isAuthenticated = localStorageData.user !== undefined;
 
-  return userLoggedIn ? <ChatLobby /> : <Landing />;
+  return isAuthenticated ? <ChatLobby /> : <Landing />;
 }

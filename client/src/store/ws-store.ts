@@ -7,6 +7,8 @@ import {
   WsMessageType,
 } from "../types";
 
+import { localStorageStore } from "./localStorageStore";
+
 type Listener = () => void;
 
 // store data
@@ -16,14 +18,6 @@ let listeners: Listener[] = [];
 
 // user auth data
 const websocket_url = import.meta.env.VITE_WS_URL_CHAT;
-
-const getUserId = () => {
-  return localStorage.getItem("userId");
-};
-
-const getRoomId = () => {
-  return localStorage.getItem("roomId");
-};
 
 export const messageStore = {
   initMessages(data: ChatMessage[]) {
@@ -35,14 +29,13 @@ export const messageStore = {
     emitChange();
   },
   sendMessage(message: string) {
-    const userId = getUserId();
-    const roomId = getRoomId();
+    const { user, roomId } = localStorageStore.getSnapshot();
 
-    if (!userId || !roomId) return;
+    if (!user || !roomId) return;
 
     const sentMessageData: WsMessage<RequestPayload> = {
       type: WsMessageType.CHAT_MESSAGE,
-      payload: { userId, roomId, message },
+      payload: { userId: user._id, roomId, message },
     };
 
     socket.send(JSON.stringify(sentMessageData));
@@ -52,14 +45,13 @@ export const messageStore = {
     socket = new WebSocket(websocket_url);
 
     socket.addEventListener("open", (_event) => {
-      const userId = getUserId();
-      const roomId = getRoomId();
+      const { user, roomId } = localStorageStore.getSnapshot();
 
-      if (!userId || !roomId) return;
+      if (!user || !roomId) return;
 
       const initialClientMessage: WsMessage<RequestPayload> = {
         type: WsMessageType.CHAT_HISTORY,
-        payload: { userId, roomId },
+        payload: { userId: user._id, roomId },
       };
 
       // send auth for initial connection
@@ -90,7 +82,9 @@ export const messageStore = {
     // before leaving the window, notify server
     // what user has disconnected by sending their id
     window.addEventListener("beforeunload", (e) => {
-      socket.close(3001, `${getUserId()}`);
+      const { user } = localStorageStore.getSnapshot();
+
+      socket.close(3001, `${user?._id}`);
     });
 
     listeners = [...listeners, listener];
@@ -98,7 +92,8 @@ export const messageStore = {
     return () => {
       // if there's no outgoing data pending, close the connection.
       if (socket.bufferedAmount === 0) {
-        socket.close(3001, `${getUserId()}`);
+        const { user } = localStorageStore.getSnapshot();
+        socket.close(3001, `${user?._id}`);
       }
 
       listeners = listeners.filter((l) => l !== listener);
