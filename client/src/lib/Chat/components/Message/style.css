@@ -1,0 +1,84 @@
+/**
+  Message style
+ */
+
+.message-container {
+  display: flex;
+  flex-direction: column;
+  align-self: flex-start;
+  align-items: flex-start;
+}
+
+.message-container.current-user {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.message-container .username, .message-container .timestamp {
+  font-family: 'Titillium Web', sans-serif;
+}
+
+/* Text Box Styling */
+.message-container .text p {
+  margin: 0;
+}
+
+.message-container .text {
+  max-width: 250px;
+  font-size: 14px;
+  padding: 8px 12px;
+  background: #e3e3e3;
+  border-radius: 18px;
+}
+
+.message-container.current-user .text {
+  background: #85144b;
+  color: #fff;
+  border-radius: 18px;
+}
+
+.message-container.has-next-message .text {
+  border-radius: 18px 18px 18px 4px;
+}
+
+.message-container.has-previous-message .text {
+  border-radius: 4px 18px 18px 18px;
+}
+
+.message-container.has-next-message + .message-container.has-next-message .text {
+  border-radius: 4px 18px 18px 4px;
+}
+
+.message-container.current-user.has-next-message .text {
+  border-radius: 18px 18px 4px 18px;
+}
+
+.message-container.current-user.has-previous-message .text {
+  border-radius: 18px 4px 18px 18px;
+}
+
+.message-container.current-user.has-next-message + .message-container.current-user.has-next-message .text {
+  border-radius: 18px 4px 4px 18px;
+}
+
+
+.message-container .timestamp {
+  font-size: 12px;
+  color: #888;
+}
+
+.message-container .username {
+  font-size: 15px;
+  color: #444;
+}
+
+.message-container .timestamp, .message-container .username {
+  padding-left: 6px;
+}
+
+
+.message-container.current-user .timestamp, .message-container.current-user .username {
+  padding-right: 6px;
+}
+
+

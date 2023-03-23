@@ -1,6 +1,9 @@
 ## Chatroom using WebSocket
 
-##### Using MERN stack
+- Using MERN stack
+- Facebook Messenger-like design for messages
+
+![Screenshot 3 users chat](https://i.imgur.com/gscHeZ7.png)
 
 TODO list:
 - Authentication (JWT)
@@ -8,3 +11,4 @@ TODO list:
 - Create chat rooms
 - Notifications
 - Create better UI
+- Write steps to run locally

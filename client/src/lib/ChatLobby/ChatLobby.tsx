@@ -18,7 +18,11 @@ export const ChatLobby: React.FC = () => {
           {localStorageData.user?.username}
         </span>
       </h2>
-      <a role="button" onClick={localStorageStore.clearLocalStorage}>
+      <a
+        role="button"
+        className="logout"
+        onClick={localStorageStore.clearLocalStorage}
+      >
         Logout
       </a>
       <Chat />

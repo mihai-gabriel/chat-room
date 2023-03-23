@@ -52,10 +52,41 @@ export const RegisterPrompt: React.FC = () => {
 
   return (
     <form className="register-form" onSubmit={submitRegisterForm}>
-      <input ref={usernameRef} type="text" placeholder="Username" />
-      <input ref={emailRef} type="text" placeholder="Email" />
-      <input ref={fullNameRef} type="text" placeholder="Full Name" />
-      <input ref={passwordRef} type="password" placeholder="Password" />
+      <div className="form-field">
+        <input
+          ref={usernameRef}
+          type="text"
+          placeholder="Username"
+          minLength={3}
+        />
+        <span className="help-text">Must be unique. At least 3 characters</span>
+      </div>
+
+      <div className="form-field">
+        <input ref={emailRef} type="email" placeholder="Email" minLength={5} />
+        <span className="help-text">e.g. example@server.com</span>
+      </div>
+
+      <div className="form-field">
+        <input
+          ref={fullNameRef}
+          type="text"
+          placeholder="Full Name"
+          minLength={5}
+        />
+        <span className="help-text">e.g. John Smith.</span>
+      </div>
+
+      <div className="form-field">
+        <input
+          ref={passwordRef}
+          type="password"
+          placeholder="Password"
+          minLength={5}
+        />
+        <span className="help-text">At least 5 characters</span>
+      </div>
+
       <span className={registerSuccess ? "success" : "hidden"}>
         Registered successfully
       </span>

@@ -23,6 +23,11 @@
   background: #85144b;
   color: #fff;
   font-family: 'Spline Sans Mono', monospace;
+  cursor: pointer;
+}
+
+.register-form button:active {
+  background: #430a26;
 }
 
 .register-form span.hidden {
@@ -32,4 +37,21 @@
 .register-form span.success {
   display: block;
   color: #2ECC40;
+}
+
+.register-form .form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.register-form .form-field, .register-form .form-field > input {
+  min-width: 300px;
+}
+
+.register-form .form-field > .help-text {
+  font-size: 12px;
+  color: #555;
+  padding-left: 4px;
+  font-family: 'Spline Sans Mono', monospace;
 }

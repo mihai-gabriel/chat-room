@@ -7,3 +7,9 @@ export interface ChatMessage {
   text: string;
   creationDate: string;
 }
+
+export interface ChatMessageDto {
+  authorId: string;
+  roomId: string;
+  text: string;
+}

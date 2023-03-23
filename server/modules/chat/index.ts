@@ -3,6 +3,7 @@ import { RequestPayload, WsMessage, WsMessageType } from "../../types";
 import { sendChatHistory } from "./sendChatHistory";
 import { broadcastChatMessage } from "./broadcastChatMessage";
 import { validateRequest } from "./validateRequest";
+import { editChatMessage } from "./editChatMessage";
 
 export const handleChatConnection = (
   client: WebSocket,
@@ -42,6 +43,9 @@ const handleMessage = async (
       break;
     case WsMessageType.CHAT_MESSAGE:
       await broadcastChatMessage(client, clients, messageData.payload);
+      break;
+    case WsMessageType.CHAT_MESSAGE_UPDATE:
+      await editChatMessage(client, clients, messageData.payload);
       break;
   }
 };

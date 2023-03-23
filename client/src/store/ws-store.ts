@@ -1,5 +1,6 @@
 import {
   ChatMessage,
+  ChatMessageDto,
   ErrorResponsePayload,
   RequestPayload,
   ResponsePayload,
@@ -28,10 +29,12 @@ export const messageStore = {
     messages = [...messages, data];
     emitChange();
   },
-  sendMessage(message: string) {
+  sendMessage(text: string) {
     const { user, roomId } = localStorageStore.getSnapshot();
 
     if (!user || !roomId) return;
+
+    const message: ChatMessageDto = { authorId: user._id, roomId, text };
 
     const sentMessageData: WsMessage<RequestPayload> = {
       type: WsMessageType.CHAT_MESSAGE,

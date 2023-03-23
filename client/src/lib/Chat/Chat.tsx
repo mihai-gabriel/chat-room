@@ -1,15 +1,17 @@
-import React, { useEffect, useRef, useSyncExternalStore } from "react";
-import dayjs, { Dayjs } from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
+import React, {
+  Fragment,
+  useEffect,
+  useRef,
+  useSyncExternalStore,
+} from "react";
 
+import { Message } from "./components/Message/Message";
 import { ChatMessage } from "../../types";
 import { localStorageStore, messageStore } from "../../store";
 
 import "./style.css";
 
 import sendIcon from "../../assets/send.svg";
-
-dayjs.extend(relativeTime);
 
 export const Chat: React.FC = () => {
   const messages = useSyncExternalStore<ChatMessage[]>(
@@ -57,23 +59,33 @@ export const Chat: React.FC = () => {
 
   return (
     <div className="chat-container">
-      <div ref={messagesRef} className="chat-messages">
-        <ul>
-          {messages.map((message) => (
-            <li key={message._id}>
-              {dayjs(message.creationDate).fromNow()}
-              {": "}
-              {message.text}
-              <span className="username"> - {message.author.fullName}</span>
-            </li>
+      <h3>Room 0</h3>
+      <div className="chat-messages-wrapper">
+        <div ref={messagesRef} className="chat-messages">
+          {messages.map((message, index) => (
+            <Fragment key={message._id}>
+              <Message
+                {...message}
+                previousMessageAuthorId={
+                  index - 1 > 0 ? messages[index - 1].author._id : undefined
+                }
+                nextMessageAuthorId={
+                  index + 1 <= messages.length - 1
+                    ? messages[index + 1].author._id
+                    : undefined
+                }
+              />
+            </Fragment>
           ))}
-        </ul>
+        </div>
       </div>
       <form className="send-message-form" onSubmit={sendMessage}>
         <input
-          className="chat-input"
           ref={userInputRef}
           type="text"
+          className="chat-input"
+          placeholder="Type here..."
+          minLength={2}
           autoFocus
         />
         <button className="send-button" type="submit">

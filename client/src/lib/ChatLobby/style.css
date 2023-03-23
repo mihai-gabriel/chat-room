@@ -12,6 +12,7 @@
 .chat-lobby-container h2 {
   font-family: Domine, serif;
   font-weight: normal;
+  margin: 4px 0;
 }
 
 .chat-lobby-container span.highlight-username {
@@ -20,18 +21,18 @@
   font-weight: bold;
 }
 
-.chat-lobby-container a[role="button"] {
+.chat-lobby-container a[role="button"].logout {
   cursor: pointer;
-  margin: 10px 0;
-  background: #0074D9;
-  color: #fff;
-  padding: 8px 12px;
+  padding: 6px 10px;
   border-radius: 4px;
   font-family: 'Spline Sans Mono', monospace;
+  border: 2px solid #85144b;
+  color: #85144b;
 }
 
 .chat-lobby-container a[role="button"]:hover {
-  background: #004682;
+  background: #85144b;
+  color: #fff;
 }
 
 .chat-lobby-container a[role="button"]:active {

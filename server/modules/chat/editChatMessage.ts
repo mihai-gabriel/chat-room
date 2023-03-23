@@ -1,5 +1,5 @@
 import { WebSocket } from "ws";
-import { ObjectId } from "mongodb";
+import { ObjectId, WithId } from "mongodb";
 
 import databaseClient from "../../db/conn";
 import * as HttpStatus from "../../utils/httpStatusCodes";
@@ -14,7 +14,7 @@ import {
   WsMessageType,
 } from "../../types";
 
-export const broadcastChatMessage = async (
+export const editChatMessage = async (
   client: WebSocket,
   clients: Set<WebSocket>,
   payload: RequestPayload
@@ -24,15 +24,25 @@ export const broadcastChatMessage = async (
   const _rooms = chatroom.collection<Room>("rooms");
   const messages = chatroom.collection<ChatMessage>("messages");
 
-  console.log(
-    `RECEIVED: ${payload.userId} - ${payload.roomId} and ${payload.message}`
-  );
-
-  const authorId = new ObjectId(payload.userId);
+  // payload info
+  const userId = new ObjectId(payload.userId);
   const roomId = new ObjectId(payload.roomId);
+
+  // message info
+  const _id = payload.message?._id;
+  const authorId = payload.message?.authorId;
+  const messageRoomId = payload.message?.roomId;
   const text = payload.message?.text;
 
-  if (!text) {
+  // could be !(arg1 && arg2 && ...), shout out to De Morgan
+  if (
+    !text ||
+    !_id ||
+    !authorId ||
+    !messageRoomId ||
+    !userId.equals(authorId) ||
+    !roomId.equals(messageRoomId)
+  ) {
     const errorMessageResponse: WsMessage<ErrorResponsePayload> = {
       type: WsMessageType.SERVER_ERROR,
       payload: {
@@ -44,18 +54,15 @@ export const broadcastChatMessage = async (
     return errorMessageResponse;
   }
 
-  console.log("message valid");
+  const upsertResult = await messages.updateOne(
+    { _id, authorId, roomId },
+    { text }
+  );
 
-  const insertResult = await messages.insertOne({
-    authorId,
-    roomId,
-    text,
-  });
-
-  const createdMessage = await messages
+  const updatedMessage = await messages
     .aggregate([
       {
-        $match: { _id: insertResult.insertedId },
+        $match: { _id: upsertResult.upsertedId },
       },
       {
         $lookup: {
@@ -81,9 +88,7 @@ export const broadcastChatMessage = async (
     ])
     .next();
 
-  console.log("message created");
-
-  if (!createdMessage) {
+  if (!updatedMessage) {
     const serverErrorResponse: WsMessage<ErrorResponsePayload> = {
       type: WsMessageType.SERVER_ERROR,
       payload: {
@@ -97,8 +102,8 @@ export const broadcastChatMessage = async (
   }
 
   const response: WsMessage<ChatMessageDto> = {
-    type: WsMessageType.CHAT_MESSAGE,
-    payload: createdMessage as ChatMessageDto,
+    type: WsMessageType.CHAT_MESSAGE_UPDATE,
+    payload: updatedMessage as ChatMessageDto,
   };
 
   clients.forEach((chatClient) => {
