@@ -81,6 +81,7 @@ export const sendChatHistory = async (
           roomId: true,
           author: true,
           text: true,
+          edited: true,
         },
       },
       { $addFields: { creationDate: { $toDate: "$_id" } } },

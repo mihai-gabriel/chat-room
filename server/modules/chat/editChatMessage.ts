@@ -20,8 +20,6 @@ export const editChatMessage = async (
   payload: RequestPayload
 ) => {
   const chatroom = databaseClient.db("chatroom");
-  const _users = chatroom.collection<UserDb>("users");
-  const _rooms = chatroom.collection<Room>("rooms");
   const messages = chatroom.collection<ChatMessage>("messages");
 
   // payload info
@@ -29,19 +27,17 @@ export const editChatMessage = async (
   const roomId = new ObjectId(payload.roomId);
 
   // message info
-  const _id = payload.message?._id;
-  const authorId = payload.message?.authorId;
-  const messageRoomId = payload.message?.roomId;
+  const _id = new ObjectId(payload.message?._id);
   const text = payload.message?.text;
 
-  // could be !(arg1 && arg2 && ...), shout out to De Morgan
+  const message = await messages.findOne({ _id });
+
   if (
     !text ||
     !_id ||
-    !authorId ||
-    !messageRoomId ||
-    !userId.equals(authorId) ||
-    !roomId.equals(messageRoomId)
+    !message ||
+    !userId.equals(message.authorId) ||
+    !roomId.equals(message.roomId)
   ) {
     const errorMessageResponse: WsMessage<ErrorResponsePayload> = {
       type: WsMessageType.SERVER_ERROR,
@@ -51,18 +47,19 @@ export const editChatMessage = async (
       },
     };
 
-    return errorMessageResponse;
+    client.send(JSON.stringify(errorMessageResponse));
+    return;
   }
 
-  const upsertResult = await messages.updateOne(
-    { _id, authorId, roomId },
-    { text }
+  const upsertResult = await messages.findOneAndUpdate(
+    { _id, authorId: message.authorId, roomId },
+    { $set: { text, edited: true } }
   );
 
   const updatedMessage = await messages
     .aggregate([
       {
-        $match: { _id: upsertResult.upsertedId },
+        $match: { _id: upsertResult.value?._id },
       },
       {
         $lookup: {
@@ -82,13 +79,14 @@ export const editChatMessage = async (
           roomId: true,
           author: true,
           text: true,
+          edited: true,
         },
       },
       { $addFields: { creationDate: { $toDate: "$_id" } } },
     ])
     .next();
 
-  if (!updatedMessage) {
+  if (!updatedMessage || !upsertResult.ok) {
     const serverErrorResponse: WsMessage<ErrorResponsePayload> = {
       type: WsMessageType.SERVER_ERROR,
       payload: {

@@ -35,8 +35,6 @@ export const validateRequest = async (payload: RequestPayload) => {
 
   // TODO: Check JWT token here when implemented
 
-  console.log("received userId", userId);
-
   const user = await users.findOne({ _id: userId });
 
   if (!user) {

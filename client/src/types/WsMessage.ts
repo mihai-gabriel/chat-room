@@ -27,7 +27,12 @@ export interface ErrorResponsePayload {
   message: string;
 }
 
+export interface DeleteResponsePayload {
+  _id: string;
+}
+
 export type ResponsePayload =
+  | DeleteResponsePayload
   | ErrorResponsePayload
   | ChatMessage[]
   | ChatMessage;

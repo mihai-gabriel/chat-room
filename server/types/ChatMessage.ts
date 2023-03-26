@@ -4,6 +4,7 @@ import { User } from "./User";
 export interface ChatMessage {
   authorId: ObjectId;
   roomId: ObjectId;
+  edited: boolean;
   text: string;
 }
 
@@ -13,4 +14,5 @@ export interface ChatMessageDto {
   author: WithId<User>;
   text: string;
   creationDate: string;
+  edited: boolean;
 }

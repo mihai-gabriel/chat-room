@@ -4,6 +4,7 @@ import { sendChatHistory } from "./sendChatHistory";
 import { broadcastChatMessage } from "./broadcastChatMessage";
 import { validateRequest } from "./validateRequest";
 import { editChatMessage } from "./editChatMessage";
+import { deleteChatMessage } from "./deleteChatMessage";
 
 export const handleChatConnection = (
   client: WebSocket,
@@ -11,7 +12,7 @@ export const handleChatConnection = (
 ) => {
   if (!client.readyState) return;
 
-  console.log("handleChatConnection() fired");
+  // console.log("handleChatConnection() fired");
 
   // Mark user as 'online'
   // userService.loginUserFromChat(messageData.userId);
@@ -44,8 +45,13 @@ const handleMessage = async (
     case WsMessageType.CHAT_MESSAGE:
       await broadcastChatMessage(client, clients, messageData.payload);
       break;
+
     case WsMessageType.CHAT_MESSAGE_UPDATE:
       await editChatMessage(client, clients, messageData.payload);
+      break;
+
+    case WsMessageType.CHAT_MESSAGE_DELETE:
+      await deleteChatMessage(client, clients, messageData.payload);
       break;
   }
 };

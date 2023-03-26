@@ -6,6 +6,7 @@ export interface ChatMessage {
   roomId: string;
   text: string;
   creationDate: string;
+  edited: boolean;
 }
 
 export interface ChatMessageDto {
@@ -13,3 +14,7 @@ export interface ChatMessageDto {
   roomId: string;
   text: string;
 }
+
+export type WithId<T> = T & {
+  _id: string;
+};

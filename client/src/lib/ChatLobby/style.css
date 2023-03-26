@@ -20,22 +20,3 @@
   font-family: Domine, serif;
   font-weight: bold;
 }
-
-.chat-lobby-container a[role="button"].logout {
-  cursor: pointer;
-  padding: 6px 10px;
-  border-radius: 4px;
-  font-family: 'Spline Sans Mono', monospace;
-  border: 2px solid #85144b;
-  color: #85144b;
-}
-
-.chat-lobby-container a[role="button"]:hover {
-  background: #85144b;
-  color: #fff;
-}
-
-.chat-lobby-container a[role="button"]:active {
-  background: #001f3f;
-}
-

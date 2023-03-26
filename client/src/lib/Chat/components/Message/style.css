@@ -23,12 +23,93 @@
   margin: 0;
 }
 
+/* edit-button */
+
+.message-container .text .edit-button {
+  display: none;
+}
+
+.message-container.current-user .text .edit-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 25px;
+  height: 25px;
+  padding: 10px;
+  border-radius: 40px;
+  position: absolute;
+  right: -55px;
+  top: -3px;
+  opacity: 0;
+  transition: all 0.15s ease-in;
+  cursor: pointer;
+}
+
+.message-container.current-user .text .edit-button {
+  left: -55px;
+}
+
+.message-container.current-user:hover .text .edit-button {
+  opacity: 1;
+}
+
+.message-container .text .edit-button:hover {
+  background-color: rgba(0, 1, 17, 0.1);
+}
+
+.message-container .text .edit-button:active {
+  background-color: rgba(0, 1, 17, 0.2);
+}
+
+/* delete-button */
+
+.message-container .text .delete-button {
+  display: none;
+}
+
+.message-container.current-user .text .delete-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 25px;
+  height: 25px;
+  padding: 10px;
+  border-radius: 40px;
+  position: absolute;
+  right: -105px;
+  top: -3px;
+  opacity: 0;
+  transition: all 0.15s ease-in;
+  cursor: pointer;
+}
+
+.message-container.current-user .text .delete-button {
+  left: -105px;
+}
+
+.message-container.current-user:hover .text .delete-button {
+  opacity: 1;
+}
+
+.message-container .text .delete-button:hover {
+  background-color: rgba(0, 1, 17, 0.1);
+}
+
+.message-container .text .delete-button:active {
+  background-color: rgba(0, 1, 17, 0.2);
+}
+
 .message-container .text {
+  position: relative;
   max-width: 250px;
   font-size: 14px;
   padding: 8px 12px;
   background: #e3e3e3;
   border-radius: 18px;
+}
+
+.message-container.current-user.editing .text {
+  background-color: rgba(133, 20, 75, 0.5);
 }
 
 .message-container.current-user .text {
@@ -60,7 +141,6 @@
 .message-container.current-user.has-next-message + .message-container.current-user.has-next-message .text {
   border-radius: 18px 4px 4px 18px;
 }
-
 
 .message-container .timestamp {
   font-size: 12px;

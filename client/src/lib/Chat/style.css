@@ -16,8 +16,10 @@
   width: 55%;
   min-height: 640px;
 
-  border: 2px solid #85144b;
+  border: 3px solid #85144b;
   border-radius: 4px;
+
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px 0px;
 }
 
 .chat-container .chat-messages-wrapper {
@@ -60,22 +62,89 @@
   width: calc(85% - 39px);
 }
 
+.chat-container form.send-message-form input.edit-input {
+  font-size: 16px;
+  padding: 16px 16px;
+  border: 3px solid #85144b;
+  border-radius: 6px;
+  background: rgba(133, 20, 75, 0.1);
+  width: calc(85% - 39px);
+}
+
+.chat-container form.send-message-form .cancel-edit {
+  position: absolute;
+  bottom: -23px;
+  left: 5.5%;
+  font-family: "Titillium Web", sans-serif;
+  color: #0074D9;
+  cursor: pointer;
+  font-size: 14px;
+}
+
 .chat-container button.send-button {
   display: flex;
   justify-content: center;
   align-items: center;
 
-  width: calc(15% - 55px);
+  width: calc(12% - 55px);
 
   min-width: 50px;
   padding: 12px 20px;
 
   background: #333;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
 
   cursor: pointer;
 }
+
+.chat-container .chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chat-container .chat-header > h3 {
+  text-transform: uppercase;
+  font-family: "Titillium Web", sans-serif;
+  color: #777;
+}
+
+.chat-container .chat-header > .auth-info {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  font-family: "Titillium Web", sans-serif;
+}
+
+.chat-container .chat-header > .auth-info > .logout {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.chat-container .chat-header > .auth-info > .logout {
+  color: #222;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.15s ease-out;
+}
+
+.chat-container .chat-header > .auth-info > .logout:hover {
+  background-color: rgba(0, 2, 34, 0.1);
+}
+
+.chat-container .chat-header > .auth-info > .logout:active {
+  background-color: rgba(0, 2, 34, 0.2);
+}
+
+.chat-container .chat-header > .auth-info > .logged-user {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
 
 .chat-container button.send-button:active {
   background: #111;
@@ -86,7 +155,6 @@
     width: 70%;
  }
 }
-
 
 .chat-messages::-webkit-scrollbar {
   width: 0.5em;
@@ -104,4 +172,8 @@
 
 .chat-messages::-webkit-scrollbar-thumb:active {
   background-color: #555;
+}
+
+.hidden {
+  display: none;
 }

@@ -1,11 +1,10 @@
 import { WebSocket } from "ws";
-import { ObjectId } from "mongodb";
+import { ObjectId, WithId } from "mongodb";
 
 import databaseClient from "../../db/conn";
 import * as HttpStatus from "../../utils/httpStatusCodes";
 import {
   ChatMessage,
-  ChatMessageDto,
   ErrorResponsePayload,
   RequestPayload,
   Room,
@@ -14,7 +13,7 @@ import {
   WsMessageType,
 } from "../../types";
 
-export const broadcastChatMessage = async (
+export const deleteChatMessage = async (
   client: WebSocket,
   clients: Set<WebSocket>,
   payload: RequestPayload
@@ -24,11 +23,21 @@ export const broadcastChatMessage = async (
   const _rooms = chatroom.collection<Room>("rooms");
   const messages = chatroom.collection<ChatMessage>("messages");
 
-  const authorId = new ObjectId(payload.userId);
+  // payload info
+  const userId = new ObjectId(payload.userId);
   const roomId = new ObjectId(payload.roomId);
-  const text = payload.message?.text;
 
-  if (!text) {
+  // message info
+  const _id = new ObjectId(payload.message?._id);
+
+  const message = await messages.findOne({ _id });
+
+  if (
+    !_id ||
+    !message ||
+    !userId.equals(message.authorId) ||
+    !roomId.equals(message.roomId)
+  ) {
     const errorMessageResponse: WsMessage<ErrorResponsePayload> = {
       type: WsMessageType.SERVER_ERROR,
       payload: {
@@ -37,47 +46,17 @@ export const broadcastChatMessage = async (
       },
     };
 
-    return errorMessageResponse;
+    client.send(JSON.stringify(errorMessageResponse));
+    return;
   }
 
-  const insertResult = await messages.insertOne({
-    authorId,
+  const upsertResult = await messages.findOneAndDelete({
+    _id,
+    authorId: message.authorId,
     roomId,
-    text,
-    edited: false,
   });
 
-  const createdMessage = await messages
-    .aggregate([
-      {
-        $match: { _id: insertResult.insertedId },
-      },
-      {
-        $lookup: {
-          from: "users",
-          localField: "authorId",
-          foreignField: "_id",
-          pipeline: [
-            { $project: { username: true, fullName: true, email: true } },
-          ],
-          as: "author",
-        },
-      },
-      { $unwind: "$author" },
-      {
-        $project: {
-          _id: true,
-          roomId: true,
-          author: true,
-          text: true,
-          edited: true,
-        },
-      },
-      { $addFields: { creationDate: { $toDate: "$_id" } } },
-    ])
-    .next();
-
-  if (!createdMessage) {
+  if (!upsertResult.ok) {
     const serverErrorResponse: WsMessage<ErrorResponsePayload> = {
       type: WsMessageType.SERVER_ERROR,
       payload: {
@@ -90,9 +69,9 @@ export const broadcastChatMessage = async (
     return;
   }
 
-  const response: WsMessage<ChatMessageDto> = {
-    type: WsMessageType.CHAT_MESSAGE,
-    payload: createdMessage as ChatMessageDto,
+  const response: WsMessage<{ _id: string }> = {
+    type: WsMessageType.CHAT_MESSAGE_DELETE,
+    payload: { _id: _id.toString() },
   };
 
   clients.forEach((chatClient) => {
