@@ -17,6 +17,8 @@ import "./style.css";
 import sendIcon from "../../assets/send.svg";
 import userIcon from "../../assets/user.svg";
 import signOutIcon from "../../assets/signout.svg";
+import { Announcement } from "./components/Announcement";
+import dayjs from "dayjs";
 
 export const Chat: React.FC = () => {
   const messages = useSyncExternalStore<ChatMessage[]>(
@@ -114,6 +116,58 @@ export const Chat: React.FC = () => {
     return null;
   }
 
+  const renderMessages = () => {
+    return messages.map((message, index) => {
+      const prevElementExists = index - 1 >= 0;
+      const nextElementExists = index + 1 <= messages.length - 1;
+
+      const prevMessage = prevElementExists ? messages[index - 1] : undefined;
+      const nextMessage = nextElementExists ? messages[index + 1] : undefined;
+
+      const prevMessageTimestamp =
+        prevMessage && dayjs(prevMessage.creationDate);
+      const nextMessageTimestamp =
+        nextMessage && dayjs(nextMessage.creationDate);
+      const messageTimestamp = dayjs(message.creationDate);
+
+      const prevHasTimeDifference =
+        messageTimestamp.diff(prevMessageTimestamp, "hours") >= 4;
+      const nextHasTimeDifference =
+        Math.abs(messageTimestamp.diff(nextMessageTimestamp, "hours")) >= 4;
+
+      return (
+        <Fragment key={message._id}>
+          {!prevElementExists && (
+            <Announcement
+              subject="✱✱"
+              text="Chat history begins here"
+              timestamp={messages[0].creationDate}
+            />
+          )}
+
+          {prevHasTimeDifference && (
+            <Announcement
+              subject={"new"}
+              text={"Last messaged arrived at"}
+              timestamp={prevMessage?.creationDate}
+            />
+          )}
+
+          <Message
+            {...message}
+            previousMessage={prevMessage}
+            nextMessage={nextMessage}
+            editing={editing}
+            setEditing={setEditing}
+            deleteMessage={deleteMessage}
+            prevHasTimeDifference={prevHasTimeDifference}
+            nextHasTimeDifference={nextHasTimeDifference}
+          />
+        </Fragment>
+      );
+    });
+  };
+
   return (
     <div className="chat-container">
       <div className="chat-header">
@@ -139,24 +193,7 @@ export const Chat: React.FC = () => {
       </div>
       <div className="chat-messages-wrapper">
         <div ref={messagesRef} className="chat-messages">
-          {messages.map((message, index) => (
-            <Fragment key={message._id}>
-              <Message
-                {...message}
-                previousMessage={
-                  index - 1 > 0 ? messages[index - 1] : undefined
-                }
-                nextMessage={
-                  index + 1 <= messages.length - 1
-                    ? messages[index + 1]
-                    : undefined
-                }
-                editing={editing}
-                setEditing={setEditing}
-                deleteMessage={deleteMessage}
-              />
-            </Fragment>
-          ))}
+          {renderMessages()}
         </div>
       </div>
       <form

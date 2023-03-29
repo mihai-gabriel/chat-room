@@ -17,6 +17,8 @@ interface MessageProps extends ChatMessage {
   editing?: string;
   setEditing: (_id: string) => void;
   deleteMessage: (_id: string) => void;
+  prevHasTimeDifference: boolean;
+  nextHasTimeDifference: boolean;
 }
 
 export const Message: React.FC<MessageProps> = ({
@@ -30,6 +32,8 @@ export const Message: React.FC<MessageProps> = ({
   editing,
   setEditing,
   deleteMessage,
+  prevHasTimeDifference,
+  nextHasTimeDifference,
 }) => {
   const localStorageData = useSyncExternalStore(
     localStorageStore.subscribe,
@@ -41,8 +45,10 @@ export const Message: React.FC<MessageProps> = ({
 
   const isEditedNow = editing === _id;
   const userIsAuthor = author._id === localStorageData.user?._id;
-  const previousContinuousMessage = previousMessage?.author._id === author._id;
-  const nextContinuousMessage = nextMessage?.author._id === author._id;
+  const previousContinuousMessage =
+    !prevHasTimeDifference && previousMessage?.author._id === author._id;
+  const nextContinuousMessage =
+    !nextHasTimeDifference && nextMessage?.author._id === author._id;
 
   const classNames = [
     "message-container",
